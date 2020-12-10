@@ -20,12 +20,15 @@ struct PakResource
     quint32 dataSize;
 };
 
+#define align(val, alignment) (((val) + (alignment) - 1) & -(alignment))
+
 PakFile::PakFile()
 {
     endian = BIG_ENDIAN;
     unsaved = true;
     data = nullptr;
     sectorSize = 2048;
+    sizeAlign = 64;
 }
 
 PakFile* PakFile::open(QString &path)
@@ -114,9 +117,11 @@ bool PakFile::save()
 
     for (quint32 i = 0; i < resCount; i++)
     {
-        pakSize = (pakSize + sectorSize - 1) & -sectorSize;
+        pakSize = align(pakSize, sectorSize);
         pakSize += resources[i].size;
     }
+
+    pakSize = align(pakSize, sizeAlign);
 
     char* pakData = new char[pakSize];
 
@@ -136,8 +141,6 @@ bool PakFile::save()
     {
         dataOffset = (dataOffset + sectorSize - 1) & -sectorSize;
 
-        const char* name = qPrintable(resources[i].name);
-
         PakResource* pakResource = &pakResources[i];
         pakResource->nameOffset = nameOffset;
         pakResource->dataOffset = dataOffset;
@@ -146,7 +149,7 @@ bool PakFile::save()
         quint32 nameLength = resources[i].name.length() + 1;
 
         memcpy(pakData + dataOffset, resources[i].data, resources[i].size);
-        memcpy(pakData + pakHeader->nameOffset + nameOffset, name, nameLength);
+        memcpy(pakData + pakHeader->nameOffset + nameOffset, qPrintable(resources[i].name), nameLength);
 
         nameOffset += nameLength;
         dataOffset += resources[i].size;
@@ -172,6 +175,7 @@ bool PakFile::save()
 
     file.close();
 
+    /*
     if (data)
     {
         delete data;
@@ -181,9 +185,17 @@ bool PakFile::save()
 
     for (quint32 i = 0; i < resCount; i++)
     {
+        if (resources[i].ownsData)
+        {
+            delete resources[i].data;
+        }
+
         resources[i].data = pakData + pakResources[i].dataOffset;
         resources[i].ownsData = false;
     }
+    */
+
+    delete[] pakData;
 
     unsaved = false;
     return true;

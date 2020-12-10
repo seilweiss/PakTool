@@ -33,6 +33,7 @@ public:
     Endian endian;
     char* data;
     quint32 sectorSize;
+    quint32 sizeAlign;
     QVector<Resource> resources;
 };
 
