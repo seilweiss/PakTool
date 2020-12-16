@@ -24,7 +24,7 @@ struct PakResource
 
 PakFile::PakFile()
 {
-    endian = BIG_ENDIAN;
+    endian = PAKFILE_BIG_ENDIAN;
     unsaved = true;
     data = nullptr;
     sectorSize = 2048;
@@ -67,13 +67,13 @@ PakFile* PakFile::open(QString &path)
 
     if (pakHeader->endian == 0)
     {
-        pakFile->endian = BIG_ENDIAN;
+        pakFile->endian = PAKFILE_BIG_ENDIAN;
         qFromBigEndian<quint32>(pakHeader, 6, pakHeader);
         qFromBigEndian<quint32>(pakResources, 3 * pakHeader->resCount, pakResources);
     }
     else
     {
-        pakFile->endian = LITTLE_ENDIAN;
+        pakFile->endian = PAKFILE_LITTLE_ENDIAN;
         qFromLittleEndian<quint32>(pakHeader, 6, pakHeader);
         qFromLittleEndian<quint32>(pakResources, 3 * pakHeader->resCount, pakResources);
     }
@@ -155,7 +155,7 @@ bool PakFile::save()
         dataOffset += resources[i].size;
     }
 
-    if (endian == BIG_ENDIAN)
+    if (endian == PAKFILE_BIG_ENDIAN)
     {
         qToBigEndian<quint32>(pakHeader, 6, pakHeader);
         qToBigEndian<quint32>(pakResources, 3 * resCount, pakResources);

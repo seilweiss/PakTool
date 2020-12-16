@@ -9,8 +9,8 @@ class PakFile
 public:
     enum Endian
     {
-        BIG_ENDIAN = 0,
-        LITTLE_ENDIAN = 1
+        PAKFILE_BIG_ENDIAN = 0,
+        PAKFILE_LITTLE_ENDIAN = 1
     };
 
     struct Resource
